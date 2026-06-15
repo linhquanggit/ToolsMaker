@@ -37,6 +37,23 @@ if (controller.TryUnlock(nodeId) == UnlockResult.Success)
     storage.Save(controller.State);
 ```
 
+## Output cho game (dễ áp dụng nhất)
+Drop component **`SkillTreeRuntime`** lên hero/account, gán `tree` → game đọc kết quả trực tiếp:
+```csharp
+var skills = hero.GetComponent<SkillTreeRuntime>();
+
+float attack = skills.GetStat("attack", baseValue: 10f); // base + tổng buff từ tree
+bool autoOpen = skills.GetFlag("chest.autoOpen");
+if (skills.HasAbility("knight.piercing_thrust")) { /* cho phép dùng skill */ }
+
+skills.TryUnlock(nodeId);          // unlock + tự lưu (autoSave) + bắn OnChanged
+skills.OnChanged.AddListener(RecalcStats);   // hoặc hook ngay trong Inspector
+```
+- `GetStat / GetFlag / HasAbility / GetAbilityRank` — đọc output đã tổng hợp.
+- `SnapshotStats()` — lấy toàn bộ stat dạng `Dictionary<string,float>` để apply hàng loạt.
+- `OnChanged` (UnityEvent) — game tự tính lại khi unlock/respec; `autoSave` ghi JSON.
+- Cần ghép thẳng vào hệ stat riêng? Tự implement `ISkillEffectContext` thay cho `DictionaryStatContext`.
+
 ## Editor
 `Tools > SkillTree > Graph Editor`:
 - Kéo asset `SkillTreeSO` vào ô **Tree**.

@@ -48,6 +48,32 @@ namespace SkillTree
 
         public int GetAbilityRank(string abilityId) => abilities.TryGetValue(abilityId, out var rank) ? rank : 0;
 
+        public IReadOnlyDictionary<string, bool> Flags => flags;
+
+        public IReadOnlyDictionary<string, int> Abilities => abilities;
+
+        public IEnumerable<string> StatIds
+        {
+            get
+            {
+                var seen = new HashSet<string>();
+                foreach (var modifier in modifiers) seen.Add(modifier.StatId);
+                return seen;
+            }
+        }
+
+        public Dictionary<string, float> SnapshotStats(IReadOnlyDictionary<string, float> baseValues = null)
+        {
+            var result = new Dictionary<string, float>();
+            foreach (var statId in StatIds)
+            {
+                float baseValue = 0f;
+                baseValues?.TryGetValue(statId, out baseValue);
+                result[statId] = GetStat(statId, baseValue);
+            }
+            return result;
+        }
+
         public float GetStat(string statId, float baseValue = 0f)
         {
             float additive = 0f;
