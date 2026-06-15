@@ -2,6 +2,10 @@
 /[Aa]ssets/[Pp]lugins/[Ss]irenix/
 /[Aa]ssets/[Pp]lugins/[Ss]irenix.meta
 
+# Project config — excluded per request; Unity regenerates defaults on open
+/[Pp]rojectSettings/
+/[Pp]ackages/
+
 # Unity generated
 [Ll]ibrary/
 [Tt]emp/

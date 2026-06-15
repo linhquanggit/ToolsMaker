@@ -1,0 +1,16 @@
+{
+    "name": "SkillTree.Samples",
+    "rootNamespace": "SkillTree.Samples",
+    "references": [
+        "SkillTree"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

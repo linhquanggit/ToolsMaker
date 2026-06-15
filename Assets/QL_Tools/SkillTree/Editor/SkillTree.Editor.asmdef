@@ -1,0 +1,18 @@
+{
+    "name": "SkillTree.Editor",
+    "rootNamespace": "SkillTree.Editor",
+    "references": [
+        "SkillTree"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
