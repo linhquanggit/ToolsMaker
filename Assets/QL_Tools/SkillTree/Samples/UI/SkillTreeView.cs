@@ -10,7 +10,8 @@ namespace SkillTree.Samples
     {
         [SerializeField] private float nodeWidth = 176f;
         [SerializeField] private float nodeHeight = 66f;
-        [SerializeField] private Vector2 contentOrigin = new Vector2(60f, -60f);
+        [SerializeField] private float layoutSpacing = 1.8f;
+        [SerializeField] private Vector2 contentOrigin = new Vector2(80f, -80f);
 
         private SkillTreeController controller;
         private RectTransform content;
@@ -18,6 +19,12 @@ namespace SkillTree.Samples
         private Font font;
         private string lastAction = string.Empty;
         private readonly List<SkillNodeButton> buttons = new List<SkillNodeButton>();
+
+        private const float TooltipWidth = 340f;
+        private const float TooltipTextWidth = 316f;
+
+        private RectTransform tooltip;
+        private Text tooltipText;
 
         public void Initialize(SkillTreeController controller)
         {
@@ -86,6 +93,95 @@ namespace SkillTree.Samples
             {
                 if (node != null) CreateNode(node);
             }
+
+            CreateTooltip(selfRect);
+        }
+
+        private void CreateTooltip(RectTransform parent)
+        {
+            var go = NewChild("Tooltip", parent);
+            tooltip = (RectTransform)go.transform;
+            tooltip.anchorMin = new Vector2(0.5f, 0.5f);
+            tooltip.anchorMax = new Vector2(0.5f, 0.5f);
+            tooltip.pivot = new Vector2(0f, 1f);
+
+            var bg = go.AddComponent<Image>();
+            bg.color = new Color(0.04f, 0.05f, 0.07f, 0.96f);
+            bg.raycastTarget = false;
+            var outline = go.AddComponent<Outline>();
+            outline.effectColor = new Color(0.7f, 0.7f, 0.8f, 0.5f);
+            outline.effectDistance = new Vector2(1.5f, -1.5f);
+
+            tooltipText = CreateText(tooltip, string.Empty, 16, TextAnchor.UpperLeft);
+            tooltipText.supportRichText = true;
+            tooltipText.horizontalOverflow = HorizontalWrapMode.Wrap;
+            tooltipText.verticalOverflow = VerticalWrapMode.Overflow;
+            var tr = tooltipText.rectTransform;
+            tr.anchorMin = new Vector2(0f, 1f);
+            tr.anchorMax = new Vector2(0f, 1f);
+            tr.pivot = new Vector2(0f, 1f);
+            tr.anchoredPosition = new Vector2(12f, -10f);
+            tr.sizeDelta = new Vector2(TooltipTextWidth, 0f);
+
+            tooltip.gameObject.SetActive(false);
+        }
+
+        private void OnNodeHover(SkillNodeButton nodeButton, bool entered)
+        {
+            if (tooltip == null) return;
+            if (!entered)
+            {
+                tooltip.gameObject.SetActive(false);
+                return;
+            }
+
+            tooltipText.text = BuildInfo(nodeButton.Node);
+            float textHeight = tooltipText.preferredHeight;
+            tooltipText.rectTransform.sizeDelta = new Vector2(TooltipTextWidth, textHeight);
+            tooltip.sizeDelta = new Vector2(TooltipWidth, textHeight + 20f);
+
+            Vector3 worldCenter = nodeButton.Rect.TransformPoint(nodeButton.Rect.rect.center);
+            Vector2 screen = RectTransformUtility.WorldToScreenPoint(null, worldCenter);
+            RectTransformUtility.ScreenPointToLocalPointInRectangle((RectTransform)transform, screen, null, out Vector2 local);
+            tooltip.anchoredPosition = local + new Vector2(nodeWidth * 0.5f + 12f, nodeHeight * 0.5f);
+
+            tooltip.SetAsLastSibling();
+            tooltip.gameObject.SetActive(true);
+        }
+
+        private string BuildInfo(SkillNodeSO node)
+        {
+            int rank = controller.GetRank(node.Id);
+            int max = node.MaxRank;
+            int previewRank = Mathf.Clamp(rank > 0 ? rank : 1, 1, max);
+
+            var sb = new System.Text.StringBuilder();
+            sb.Append("<b><size=20>").Append(node.DisplayName).Append("</size></b>\n");
+            sb.Append("<color=#9fb4c8>").Append(node.NodeType).Append("  ·  Rank ").Append(rank).Append('/').Append(max).Append("</color>\n");
+
+            if (!string.IsNullOrEmpty(node.Description))
+                sb.Append('\n').Append(node.Description).Append('\n');
+
+            if (node.Effects != null && node.Effects.Count > 0)
+            {
+                sb.Append("\n<b>Effects</b>\n");
+                for (int i = 0; i < node.Effects.Count; i++)
+                {
+                    var effect = node.Effects[i];
+                    if (effect == null) continue;
+                    sb.Append("<color=#7fd6a0>• ").Append(effect.GetPreview(previewRank)).Append("</color>\n");
+                }
+            }
+
+            sb.Append('\n');
+            if (rank >= max) sb.Append("<color=#82d36a>MAX RANK</color>");
+            else sb.Append("<color=#e6c84a>Next cost: ").Append(controller.GetNextCost(node.Id)).Append("  (").Append(controller.Tree.CurrencyId).Append(")</color>");
+
+            var can = controller.CanUnlock(node.Id);
+            if (rank < max && can != UnlockResult.Success)
+                sb.Append("\n<color=#d98a8a>").Append(can).Append("</color>");
+
+            return sb.ToString();
         }
 
         private void CreateNode(SkillNodeSO node)
@@ -116,7 +212,7 @@ namespace SkillTree.Samples
             sub.color = Color.white;
 
             var nodeButton = go.AddComponent<SkillNodeButton>();
-            nodeButton.Bind(node, controller, background, title, sub, button, OnNodeClicked);
+            nodeButton.Bind(node, controller, background, title, sub, button, OnNodeClicked, OnNodeHover);
             buttons.Add(nodeButton);
         }
 
@@ -192,9 +288,9 @@ namespace SkillTree.Samples
             return go;
         }
 
-        private static Vector2 UiPos(SkillNodeSO node)
+        private Vector2 UiPos(SkillNodeSO node)
         {
-            return new Vector2(node.GraphPosition.x, -node.GraphPosition.y);
+            return new Vector2(node.GraphPosition.x, -node.GraphPosition.y) * layoutSpacing;
         }
     }
 

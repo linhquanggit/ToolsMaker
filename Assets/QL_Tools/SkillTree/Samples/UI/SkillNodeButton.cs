@@ -1,10 +1,11 @@
 using System;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace SkillTree.Samples
 {
-    public class SkillNodeButton : MonoBehaviour
+    public class SkillNodeButton : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     {
         private static readonly Color ColorMaxed = new Color(0.20f, 0.58f, 0.27f);
         private static readonly Color ColorRanked = new Color(0.18f, 0.45f, 0.55f);
@@ -18,10 +19,12 @@ namespace SkillTree.Samples
         private Text title;
         private Text sub;
         private Action<SkillNodeSO> onClick;
+        private Action<SkillNodeButton, bool> onHover;
 
         public SkillNodeSO Node => node;
+        public RectTransform Rect => (RectTransform)transform;
 
-        public void Bind(SkillNodeSO node, SkillTreeController controller, Image background, Text title, Text sub, Button button, Action<SkillNodeSO> onClick)
+        public void Bind(SkillNodeSO node, SkillTreeController controller, Image background, Text title, Text sub, Button button, Action<SkillNodeSO> onClick, Action<SkillNodeButton, bool> onHover)
         {
             this.node = node;
             this.controller = controller;
@@ -29,8 +32,13 @@ namespace SkillTree.Samples
             this.title = title;
             this.sub = sub;
             this.onClick = onClick;
+            this.onHover = onHover;
             button.onClick.AddListener(() => this.onClick?.Invoke(this.node));
         }
+
+        public void OnPointerEnter(PointerEventData eventData) => onHover?.Invoke(this, true);
+
+        public void OnPointerExit(PointerEventData eventData) => onHover?.Invoke(this, false);
 
         public void Refresh()
         {
