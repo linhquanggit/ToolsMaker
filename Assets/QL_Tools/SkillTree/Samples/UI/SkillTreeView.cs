@@ -1,0 +1,184 @@
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+namespace SkillTree.Samples
+{
+    [RequireComponent(typeof(RectTransform))]
+    public class SkillTreeView : MonoBehaviour
+    {
+        [SerializeField] private float nodeWidth = 150f;
+        [SerializeField] private float nodeHeight = 58f;
+        [SerializeField] private Vector2 contentSize = new Vector2(1400f, 820f);
+
+        private SkillTreeController controller;
+        private RectTransform content;
+        private Text header;
+        private Font font;
+        private readonly List<SkillNodeButton> buttons = new List<SkillNodeButton>();
+
+        public void Initialize(SkillTreeController controller)
+        {
+            this.controller = controller;
+            font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+
+            Build();
+
+            controller.Events.OnPointsChanged += _ => RefreshAll();
+            controller.Events.OnRankChanged += (_, __) => RefreshAll();
+            controller.Events.OnRespec += RefreshAll;
+            RefreshAll();
+        }
+
+        public void RefreshAll()
+        {
+            header.text = $"{controller.Tree.CurrencyId}:  {controller.AvailablePoints}      —  click a node to unlock / rank up";
+            for (int i = 0; i < buttons.Count; i++) buttons[i].Refresh();
+        }
+
+        private void Build()
+        {
+            var selfRect = (RectTransform)transform;
+
+            header = CreateText(selfRect, string.Empty, 20, TextAnchor.MiddleLeft);
+            var hr = header.rectTransform;
+            hr.anchorMin = new Vector2(0f, 1f);
+            hr.anchorMax = new Vector2(1f, 1f);
+            hr.pivot = new Vector2(0f, 1f);
+            hr.anchoredPosition = new Vector2(12f, -6f);
+            hr.sizeDelta = new Vector2(-24f, 32f);
+
+            var scrollGo = NewChild("Scroll", selfRect);
+            var scrollRt = (RectTransform)scrollGo.transform;
+            scrollRt.anchorMin = Vector2.zero;
+            scrollRt.anchorMax = Vector2.one;
+            scrollRt.offsetMin = Vector2.zero;
+            scrollRt.offsetMax = new Vector2(0f, -40f);
+
+            var scrollImg = scrollGo.AddComponent<Image>();
+            scrollImg.color = new Color(0.10f, 0.10f, 0.13f, 1f);
+            scrollGo.AddComponent<Mask>().showMaskGraphic = true;
+
+            var scrollRect = scrollGo.AddComponent<ScrollRect>();
+            content = (RectTransform)NewChild("Content", scrollRt).transform;
+            content.anchorMin = new Vector2(0f, 1f);
+            content.anchorMax = new Vector2(0f, 1f);
+            content.pivot = new Vector2(0f, 1f);
+            content.anchoredPosition = Vector2.zero;
+            content.sizeDelta = contentSize;
+
+            scrollRect.content = content;
+            scrollRect.horizontal = true;
+            scrollRect.vertical = true;
+            scrollRect.movementType = ScrollRect.MovementType.Clamped;
+            scrollRect.scrollSensitivity = 12f;
+
+            foreach (var node in controller.Tree.Nodes)
+            {
+                if (node == null) continue;
+                foreach (var group in node.Prerequisites)
+                {
+                    if (group == null) continue;
+                    foreach (var prereq in group.Nodes)
+                    {
+                        if (prereq != null) CreateLine(UiPos(prereq), UiPos(node));
+                    }
+                }
+            }
+
+            foreach (var node in controller.Tree.Nodes)
+            {
+                if (node != null) CreateNode(node);
+            }
+        }
+
+        private void CreateNode(SkillNodeSO node)
+        {
+            var go = NewChild(node.DisplayName, content);
+            var rt = (RectTransform)go.transform;
+            rt.anchorMin = new Vector2(0f, 1f);
+            rt.anchorMax = new Vector2(0f, 1f);
+            rt.pivot = new Vector2(0.5f, 0.5f);
+            rt.anchoredPosition = UiPos(node);
+            rt.sizeDelta = new Vector2(nodeWidth, nodeHeight);
+
+            var background = go.AddComponent<Image>();
+            var outline = go.AddComponent<Outline>();
+            outline.effectColor = new Color(0f, 0f, 0f, 0.6f);
+            outline.effectDistance = new Vector2(2f, -2f);
+
+            var button = go.AddComponent<Button>();
+            button.targetGraphic = background;
+
+            var title = CreateText(rt, node.DisplayName, 14, TextAnchor.UpperCenter);
+            StretchPadded(title.rectTransform, 4f, 6f);
+
+            var sub = CreateText(rt, string.Empty, 12, TextAnchor.LowerCenter);
+            StretchPadded(sub.rectTransform, 4f, 6f);
+            sub.color = new Color(1f, 1f, 1f, 0.85f);
+
+            var nodeButton = go.AddComponent<SkillNodeButton>();
+            nodeButton.Bind(node, controller, background, title, sub, button, OnNodeClicked);
+            buttons.Add(nodeButton);
+        }
+
+        private void CreateLine(Vector2 a, Vector2 b)
+        {
+            var go = NewChild("Line", content);
+            var rt = (RectTransform)go.transform;
+            rt.anchorMin = new Vector2(0f, 1f);
+            rt.anchorMax = new Vector2(0f, 1f);
+            rt.pivot = new Vector2(0.5f, 0.5f);
+
+            Vector2 delta = b - a;
+            rt.anchoredPosition = a + delta * 0.5f;
+            rt.sizeDelta = new Vector2(delta.magnitude, 3f);
+            rt.localRotation = Quaternion.Euler(0f, 0f, Mathf.Atan2(delta.y, delta.x) * Mathf.Rad2Deg);
+
+            var image = go.AddComponent<Image>();
+            image.color = new Color(1f, 1f, 1f, 0.18f);
+            image.raycastTarget = false;
+        }
+
+        private void OnNodeClicked(SkillNodeSO node)
+        {
+            controller.TryUnlock(node.Id);
+        }
+
+        private Text CreateText(RectTransform parent, string content, int fontSize, TextAnchor anchor)
+        {
+            var go = NewChild("Text", parent);
+            var text = go.AddComponent<Text>();
+            text.font = font;
+            text.text = content;
+            text.fontSize = fontSize;
+            text.alignment = anchor;
+            text.color = Color.white;
+            text.raycastTarget = false;
+            text.horizontalOverflow = HorizontalWrapMode.Overflow;
+            text.verticalOverflow = VerticalWrapMode.Overflow;
+            return text;
+        }
+
+        private static void StretchPadded(RectTransform rt, float horizontal, float vertical)
+        {
+            rt.anchorMin = Vector2.zero;
+            rt.anchorMax = Vector2.one;
+            rt.pivot = new Vector2(0.5f, 0.5f);
+            rt.offsetMin = new Vector2(horizontal, vertical);
+            rt.offsetMax = new Vector2(-horizontal, -vertical);
+        }
+
+        private static GameObject NewChild(string name, Transform parent)
+        {
+            var go = new GameObject(name, typeof(RectTransform));
+            go.transform.SetParent(parent, false);
+            return go;
+        }
+
+        private static Vector2 UiPos(SkillNodeSO node)
+        {
+            return new Vector2(node.GraphPosition.x, -node.GraphPosition.y);
+        }
+    }
+}

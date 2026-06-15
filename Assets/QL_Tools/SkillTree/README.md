@@ -51,6 +51,17 @@ if (controller.TryUnlock(nodeId) == UnlockResult.Success)
 
 Mô phỏng cấu trúc dữ liệu TaskBar Hero; sinh ra asset thật tại `Samples/Generated/` để test ngay.
 
+## UI runtime (test trực quan)
+Component `SkillTreeViewDemo` (Samples) tự dựng UI từ data — không cần prefab:
+1. Tạo scene rỗng → GameObject → add **SkillTreeViewDemo**.
+2. Gán `tree` (vd `RuneTree`), `startingPoints`. **Play**.
+3. UI hiện cây node (vị trí theo GraphView), đường nối prerequisite, màu theo trạng thái:
+   - xanh lá = MAX, xanh teal = đã có rank, vàng = mở được, cam = thiếu điểm, xám = khóa.
+   - Click node để unlock / rank up; header hiện currency + điểm còn lại. Kéo để pan.
+4. Nút Odin `Respec` / `Save` trên component.
+
+`SkillTreeView.Initialize(controller)` dùng được độc lập nếu bạn tự dựng Canvas/controller.
+
 ## Mở rộng
 | Muốn thêm | Làm gì | Đụng core? |
 |---|---|---|

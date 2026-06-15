@@ -2,7 +2,8 @@
     "name": "SkillTree.Samples",
     "rootNamespace": "SkillTree.Samples",
     "references": [
-        "SkillTree"
+        "SkillTree",
+        "UnityEngine.UI"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
