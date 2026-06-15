@@ -35,7 +35,7 @@ namespace SkillTree.Samples
         public void RefreshAll()
         {
             header.text = string.IsNullOrEmpty(lastAction)
-                ? $"{controller.Tree.CurrencyId}:  {controller.AvailablePoints}      —  click a node to unlock / rank up · drag empty space to pan"
+                ? $"{controller.Tree.CurrencyId}:  {controller.AvailablePoints}      —  click node = unlock · drag = pan · scroll wheel = zoom"
                 : $"{controller.Tree.CurrencyId}:  {controller.AvailablePoints}      —  {lastAction}";
             for (int i = 0; i < buttons.Count; i++) buttons[i].Refresh();
         }
@@ -191,13 +191,31 @@ namespace SkillTree.Samples
         }
     }
 
-    public class SkillTreeDragPanner : MonoBehaviour, IDragHandler
+    public class SkillTreeDragPanner : MonoBehaviour, IDragHandler, IScrollHandler
     {
         public RectTransform Target;
+        public float MinZoom = 0.35f;
+        public float MaxZoom = 2.5f;
+        public float ZoomStep = 0.12f;
 
         public void OnDrag(PointerEventData eventData)
         {
             if (Target != null) Target.anchoredPosition += eventData.delta;
+        }
+
+        public void OnScroll(PointerEventData eventData)
+        {
+            if (Target == null || Mathf.Approximately(eventData.scrollDelta.y, 0f)) return;
+
+            float current = Target.localScale.x;
+            float factor = eventData.scrollDelta.y > 0f ? 1f + ZoomStep : 1f - ZoomStep;
+            float target = Mathf.Clamp(current * factor, MinZoom, MaxZoom);
+            if (Mathf.Approximately(target, current)) return;
+
+            RectTransformUtility.ScreenPointToWorldPointInRectangle(Target, eventData.position, eventData.enterEventCamera, out Vector3 before);
+            Target.localScale = new Vector3(target, target, 1f);
+            RectTransformUtility.ScreenPointToWorldPointInRectangle(Target, eventData.position, eventData.enterEventCamera, out Vector3 after);
+            Target.position += before - after;
         }
     }
 }
