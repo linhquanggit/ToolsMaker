@@ -23,7 +23,7 @@ namespace SkillTree.Samples
                 return;
             }
 
-            var scene = EditorSceneManager.NewScene(NewSceneSetup.DefaultGameObjects, NewSceneSetupMode.Single);
+            var scene = EditorSceneManager.NewScene(NewSceneSetup.DefaultGameObjects, NewSceneMode.Single);
 
             var playerGo = new GameObject("Player");
             var player = playerGo.AddComponent<DemoPlayerStats>();
