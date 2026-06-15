@@ -1,3 +1,4 @@
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 namespace SkillTree
@@ -5,7 +6,7 @@ namespace SkillTree
     [CreateAssetMenu(fileName = "UnlockFlagEffect", menuName = "SkillTree/Effects/Unlock Flag")]
     public class UnlockFlagEffectSO : SkillEffectSO
     {
-        [SerializeField] private string flagId;
+        [SerializeField, ValueDropdown("@SkillTree.SkillKeyCatalog.FlagKeys()")] private string flagId;
         [SerializeField] private bool valueWhenUnlocked = true;
 
 #if UNITY_EDITOR

@@ -1,3 +1,4 @@
+using Sirenix.OdinInspector;
 using UnityEngine;
 
 namespace SkillTree
@@ -5,7 +6,7 @@ namespace SkillTree
     [CreateAssetMenu(fileName = "GrantAbilityEffect", menuName = "SkillTree/Effects/Grant Ability")]
     public class GrantAbilityEffectSO : SkillEffectSO
     {
-        [SerializeField] private string abilityId;
+        [SerializeField, ValueDropdown("@SkillTree.SkillKeyCatalog.AbilityKeys()")] private string abilityId;
 
 #if UNITY_EDITOR
         public void Editor_Configure(string abilityId)

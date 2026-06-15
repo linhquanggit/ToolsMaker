@@ -14,7 +14,7 @@ namespace SkillTree
     [CreateAssetMenu(fileName = "StatModifierEffect", menuName = "SkillTree/Effects/Stat Modifier")]
     public class StatModifierEffectSO : SkillEffectSO
     {
-        [SerializeField] private string statId;
+        [SerializeField, ValueDropdown("@SkillTree.SkillKeyCatalog.StatKeys()")] private string statId;
         [SerializeField] private ModifierType modifierType = ModifierType.Additive;
         [SerializeField] private StatValueMode valueMode = StatValueMode.Linear;
 

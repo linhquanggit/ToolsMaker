@@ -92,6 +92,10 @@ Mở node → `GrantAbility(abilityId, rank)`; rank để scale cấp skill.
 > Một node gắn **nhiều effect** được (vd Aegis Field = Grant Ability + Stat Modifier `shieldBlock`).
 > Cần loại hiệu ứng mới? Tạo subclass `SkillEffectSO`, override `Apply/Remove/GetPreview` — **không sửa core**.
 
+**Tránh gõ sai key:** tạo asset `SkillKeyCatalog` (`Create > SkillTree > Key Catalog`) liệt kê các `statId/flagId/abilityId` hợp lệ → field trong effect dùng **dropdown chọn** thay vì gõ tay. Menu `Tools > SkillTree > Keys > Create or Refresh Catalog` tự quét mọi effect trong project và điền catalog. Thêm key mới: gõ **một lần** trong catalog, chọn ở mọi nơi.
+
+**StatModifier có `valueMode`:** `Linear` (`valuePerRank × rank`) · `PerRank` (bảng tổng bonus từng rank) · `Curve` (AnimationCurve).
+
 ---
 
 ## 4. Thêm node/skill & nối điều kiện
