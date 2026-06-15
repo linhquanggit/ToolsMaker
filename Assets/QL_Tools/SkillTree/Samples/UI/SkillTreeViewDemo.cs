@@ -10,10 +10,12 @@ namespace SkillTree.Samples
         [SerializeField] private SkillTreeSO tree;
         [SerializeField] private int startingPoints = 200000;
         [SerializeField] private bool loadSaved = false;
+        [SerializeField] private DemoPlayerStats player;
 
         private SkillTreeController controller;
         private DictionaryStatContext context;
         private ISkillTreeStorage storage;
+        private SkillTreeStatsPanel statsPanel;
 
         private void Start()
         {
@@ -35,17 +37,43 @@ namespace SkillTree.Samples
             controller = new SkillTreeController(tree, state, context);
             controller.ReapplyAllEffects();
 
+            ResolvePlayer();
+            player.SetContext(context);
+
             var canvas = CreateCanvas();
 
             var viewGo = new GameObject("SkillTreeView", typeof(RectTransform));
             viewGo.transform.SetParent(canvas.transform, false);
             var rt = (RectTransform)viewGo.transform;
             rt.anchorMin = Vector2.zero;
-            rt.anchorMax = Vector2.one;
+            rt.anchorMax = new Vector2(0.72f, 1f);
             rt.offsetMin = Vector2.zero;
             rt.offsetMax = Vector2.zero;
-
             viewGo.AddComponent<SkillTreeView>().Initialize(controller);
+
+            var panelGo = new GameObject("StatsPanel", typeof(RectTransform));
+            panelGo.transform.SetParent(canvas.transform, false);
+            var pr = (RectTransform)panelGo.transform;
+            pr.anchorMin = new Vector2(0.72f, 0f);
+            pr.anchorMax = new Vector2(1f, 1f);
+            pr.offsetMin = Vector2.zero;
+            pr.offsetMax = Vector2.zero;
+            statsPanel = panelGo.AddComponent<SkillTreeStatsPanel>();
+            statsPanel.Initialize(player);
+
+            controller.Events.OnRankChanged += (_, __) => statsPanel.Refresh();
+            controller.Events.OnPointsChanged += _ => statsPanel.Refresh();
+            controller.Events.OnRespec += statsPanel.Refresh;
+        }
+
+        private void ResolvePlayer()
+        {
+            if (player == null) player = FindObjectOfType<DemoPlayerStats>();
+            if (player == null)
+            {
+                var go = new GameObject("Player");
+                player = go.AddComponent<DemoPlayerStats>();
+            }
         }
 
         [Button, EnableIf("@controller != null")]

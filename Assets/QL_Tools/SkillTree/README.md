@@ -79,6 +79,8 @@ Component `SkillTreeViewDemo` (Samples) tự dựng UI từ data — không cầ
 
 `SkillTreeView.Initialize(controller)` dùng được độc lập nếu bạn tự dựng Canvas/controller.
 
+**Demo scene đầy đủ (1 click):** `Tools > SkillTree > Samples > Create Demo Scene` → sinh scene có sẵn `Player` (DemoPlayerStats) + cây skill bên trái + **bảng PLAYER STATS bên phải**. Play → click node, xem chỉ số đổi `base (+bonus) = total` theo thời gian thực.
+
 ## Mở rộng
 | Muốn thêm | Làm gì | Đụng core? |
 |---|---|---|
