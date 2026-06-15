@@ -8,8 +8,8 @@ namespace SkillTree.Samples
     [RequireComponent(typeof(RectTransform))]
     public class SkillTreeView : MonoBehaviour
     {
-        [SerializeField] private float nodeWidth = 150f;
-        [SerializeField] private float nodeHeight = 58f;
+        [SerializeField] private float nodeWidth = 176f;
+        [SerializeField] private float nodeHeight = 66f;
         [SerializeField] private Vector2 contentOrigin = new Vector2(60f, -60f);
 
         private SkillTreeController controller;
@@ -23,6 +23,8 @@ namespace SkillTree.Samples
         {
             this.controller = controller;
             font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            if (font == null) font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+            if (font == null) font = Font.CreateDynamicFontFromOSFont("Arial", 16);
 
             Build();
 
@@ -59,7 +61,7 @@ namespace SkillTree.Samples
             content.sizeDelta = new Vector2(2000f, 1200f);
             panner.Target = content;
 
-            header = CreateText(selfRect, string.Empty, 20, TextAnchor.MiddleLeft);
+            header = CreateText(selfRect, string.Empty, 26, TextAnchor.MiddleLeft);
             var hr = header.rectTransform;
             hr.anchorMin = new Vector2(0f, 1f);
             hr.anchorMax = new Vector2(1f, 1f);
@@ -106,12 +108,12 @@ namespace SkillTree.Samples
             var button = go.AddComponent<Button>();
             button.targetGraphic = background;
 
-            var title = CreateText(rt, node.DisplayName, 14, TextAnchor.UpperCenter);
+            var title = CreateText(rt, node.DisplayName, 20, TextAnchor.UpperCenter);
             StretchPadded(title.rectTransform, 4f, 6f);
 
-            var sub = CreateText(rt, string.Empty, 12, TextAnchor.LowerCenter);
+            var sub = CreateText(rt, string.Empty, 17, TextAnchor.LowerCenter);
             StretchPadded(sub.rectTransform, 4f, 6f);
-            sub.color = new Color(1f, 1f, 1f, 0.85f);
+            sub.color = Color.white;
 
             var nodeButton = go.AddComponent<SkillNodeButton>();
             nodeButton.Bind(node, controller, background, title, sub, button, OnNodeClicked);
@@ -152,11 +154,16 @@ namespace SkillTree.Samples
             text.font = font;
             text.text = content;
             text.fontSize = fontSize;
+            text.fontStyle = FontStyle.Bold;
             text.alignment = anchor;
             text.color = Color.white;
             text.raycastTarget = false;
             text.horizontalOverflow = HorizontalWrapMode.Overflow;
             text.verticalOverflow = VerticalWrapMode.Overflow;
+
+            var shadow = go.AddComponent<Shadow>();
+            shadow.effectColor = new Color(0f, 0f, 0f, 0.85f);
+            shadow.effectDistance = new Vector2(1.5f, -1.5f);
             return text;
         }
 
