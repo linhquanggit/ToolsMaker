@@ -64,8 +64,8 @@ namespace SkillTree.Samples
             canvas.renderMode = RenderMode.ScreenSpaceOverlay;
 
             var scaler = go.GetComponent<CanvasScaler>();
-            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1920f, 1080f);
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
+            scaler.scaleFactor = 1f;
             return canvas;
         }
 
