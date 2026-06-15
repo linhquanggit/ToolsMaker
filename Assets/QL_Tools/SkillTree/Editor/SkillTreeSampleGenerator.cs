@@ -136,7 +136,10 @@ namespace SkillTree.Editor
             var tree = ScriptableObject.CreateInstance<SkillTreeSO>();
             tree.name = fileName;
             tree.Editor_SetMeta(treeId, currencyId);
-            AssetDatabase.CreateAsset(tree, AssetDatabase.GenerateUniqueAssetPath($"{Dir}/{fileName}.asset"));
+
+            var path = $"{Dir}/{fileName}.asset";
+            if (AssetDatabase.LoadAssetAtPath<SkillTreeSO>(path) != null) AssetDatabase.DeleteAsset(path);
+            AssetDatabase.CreateAsset(tree, path);
             return tree;
         }
 
