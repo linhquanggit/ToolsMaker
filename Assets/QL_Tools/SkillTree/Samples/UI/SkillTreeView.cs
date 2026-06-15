@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace SkillTree.Samples
@@ -9,12 +10,13 @@ namespace SkillTree.Samples
     {
         [SerializeField] private float nodeWidth = 150f;
         [SerializeField] private float nodeHeight = 58f;
-        [SerializeField] private Vector2 contentSize = new Vector2(1400f, 820f);
+        [SerializeField] private Vector2 contentOrigin = new Vector2(60f, -60f);
 
         private SkillTreeController controller;
         private RectTransform content;
         private Text header;
         private Font font;
+        private string lastAction = string.Empty;
         private readonly List<SkillNodeButton> buttons = new List<SkillNodeButton>();
 
         public void Initialize(SkillTreeController controller)
@@ -32,13 +34,30 @@ namespace SkillTree.Samples
 
         public void RefreshAll()
         {
-            header.text = $"{controller.Tree.CurrencyId}:  {controller.AvailablePoints}      —  click a node to unlock / rank up";
+            header.text = string.IsNullOrEmpty(lastAction)
+                ? $"{controller.Tree.CurrencyId}:  {controller.AvailablePoints}      —  click a node to unlock / rank up · drag empty space to pan"
+                : $"{controller.Tree.CurrencyId}:  {controller.AvailablePoints}      —  {lastAction}";
             for (int i = 0; i < buttons.Count; i++) buttons[i].Refresh();
         }
 
         private void Build()
         {
             var selfRect = (RectTransform)transform;
+
+            var panel = NewChild("Panel", selfRect);
+            var panelRect = (RectTransform)panel.transform;
+            Stretch(panelRect);
+            var panelImage = panel.AddComponent<Image>();
+            panelImage.color = new Color(0.10f, 0.10f, 0.13f, 1f);
+            var panner = panel.AddComponent<SkillTreeDragPanner>();
+
+            content = (RectTransform)NewChild("Content", panelRect).transform;
+            content.anchorMin = new Vector2(0f, 1f);
+            content.anchorMax = new Vector2(0f, 1f);
+            content.pivot = new Vector2(0f, 1f);
+            content.anchoredPosition = contentOrigin;
+            content.sizeDelta = new Vector2(2000f, 1200f);
+            panner.Target = content;
 
             header = CreateText(selfRect, string.Empty, 20, TextAnchor.MiddleLeft);
             var hr = header.rectTransform;
@@ -47,31 +66,6 @@ namespace SkillTree.Samples
             hr.pivot = new Vector2(0f, 1f);
             hr.anchoredPosition = new Vector2(12f, -6f);
             hr.sizeDelta = new Vector2(-24f, 32f);
-
-            var scrollGo = NewChild("Scroll", selfRect);
-            var scrollRt = (RectTransform)scrollGo.transform;
-            scrollRt.anchorMin = Vector2.zero;
-            scrollRt.anchorMax = Vector2.one;
-            scrollRt.offsetMin = Vector2.zero;
-            scrollRt.offsetMax = new Vector2(0f, -40f);
-
-            var scrollImg = scrollGo.AddComponent<Image>();
-            scrollImg.color = new Color(0.10f, 0.10f, 0.13f, 1f);
-            scrollGo.AddComponent<Mask>().showMaskGraphic = true;
-
-            var scrollRect = scrollGo.AddComponent<ScrollRect>();
-            content = (RectTransform)NewChild("Content", scrollRt).transform;
-            content.anchorMin = new Vector2(0f, 1f);
-            content.anchorMax = new Vector2(0f, 1f);
-            content.pivot = new Vector2(0f, 1f);
-            content.anchoredPosition = Vector2.zero;
-            content.sizeDelta = contentSize;
-
-            scrollRect.content = content;
-            scrollRect.horizontal = true;
-            scrollRect.vertical = true;
-            scrollRect.movementType = ScrollRect.MovementType.Clamped;
-            scrollRect.scrollSensitivity = 12f;
 
             foreach (var node in controller.Tree.Nodes)
             {
@@ -103,6 +97,8 @@ namespace SkillTree.Samples
             rt.sizeDelta = new Vector2(nodeWidth, nodeHeight);
 
             var background = go.AddComponent<Image>();
+            background.raycastTarget = true;
+
             var outline = go.AddComponent<Outline>();
             outline.effectColor = new Color(0f, 0f, 0f, 0.6f);
             outline.effectDistance = new Vector2(2f, -2f);
@@ -142,7 +138,11 @@ namespace SkillTree.Samples
 
         private void OnNodeClicked(SkillNodeSO node)
         {
-            controller.TryUnlock(node.Id);
+            UnlockResult result = controller.TryUnlock(node.Id);
+            lastAction = result == UnlockResult.Success
+                ? $"Unlocked: {node.DisplayName} (rank {controller.GetRank(node.Id)})"
+                : $"{node.DisplayName} → {result}";
+            RefreshAll();
         }
 
         private Text CreateText(RectTransform parent, string content, int fontSize, TextAnchor anchor)
@@ -158,6 +158,15 @@ namespace SkillTree.Samples
             text.horizontalOverflow = HorizontalWrapMode.Overflow;
             text.verticalOverflow = VerticalWrapMode.Overflow;
             return text;
+        }
+
+        private static void Stretch(RectTransform rt)
+        {
+            rt.anchorMin = Vector2.zero;
+            rt.anchorMax = Vector2.one;
+            rt.pivot = new Vector2(0.5f, 0.5f);
+            rt.offsetMin = Vector2.zero;
+            rt.offsetMax = Vector2.zero;
         }
 
         private static void StretchPadded(RectTransform rt, float horizontal, float vertical)
@@ -179,6 +188,16 @@ namespace SkillTree.Samples
         private static Vector2 UiPos(SkillNodeSO node)
         {
             return new Vector2(node.GraphPosition.x, -node.GraphPosition.y);
+        }
+    }
+
+    public class SkillTreeDragPanner : MonoBehaviour, IDragHandler
+    {
+        public RectTransform Target;
+
+        public void OnDrag(PointerEventData eventData)
+        {
+            if (Target != null) Target.anchoredPosition += eventData.delta;
         }
     }
 }
