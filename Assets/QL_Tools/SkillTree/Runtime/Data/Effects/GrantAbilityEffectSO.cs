@@ -7,6 +7,13 @@ namespace SkillTree
     {
         [SerializeField] private string abilityId;
 
+#if UNITY_EDITOR
+        public void Editor_Configure(string abilityId)
+        {
+            this.abilityId = abilityId;
+        }
+#endif
+
         public override void Apply(ISkillEffectContext context, int rank, object source)
         {
             if (context == null || string.IsNullOrEmpty(abilityId)) return;

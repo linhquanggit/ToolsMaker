@@ -49,6 +49,20 @@ namespace SkillTree
 
         public void Editor_SetGraphPosition(Vector2 value) => graphPosition = value;
 
+        public void Editor_Configure(string displayName, string description, SkillNodeType nodeType, int maxRank, CostCurve cost)
+        {
+            this.displayName = displayName;
+            this.description = description;
+            this.nodeType = nodeType;
+            this.maxRank = Mathf.Max(1, maxRank);
+            if (cost != null) this.cost = cost;
+        }
+
+        public void Editor_AddEffect(SkillEffectSO effect)
+        {
+            if (effect != null && !effects.Contains(effect)) effects.Add(effect);
+        }
+
         public void Editor_AddPrerequisite(SkillNodeSO other)
         {
             if (other == null || other == this) return;

@@ -45,6 +45,12 @@ namespace SkillTree
         }
 
 #if UNITY_EDITOR
+        public void Editor_SetMeta(string treeId, string currencyId)
+        {
+            this.treeId = treeId;
+            this.currencyId = currencyId;
+        }
+
         public void Editor_AddNode(SkillNodeSO node)
         {
             if (node == null || nodes.Contains(node)) return;

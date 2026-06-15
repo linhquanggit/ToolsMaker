@@ -9,6 +9,15 @@ namespace SkillTree
         [SerializeField] private float valuePerRank = 1f;
         [SerializeField] private ModifierType modifierType = ModifierType.Additive;
 
+#if UNITY_EDITOR
+        public void Editor_Configure(string statId, float valuePerRank, ModifierType modifierType)
+        {
+            this.statId = statId;
+            this.valuePerRank = valuePerRank;
+            this.modifierType = modifierType;
+        }
+#endif
+
         public override void Apply(ISkillEffectContext context, int rank, object source)
         {
             if (context == null || string.IsNullOrEmpty(statId)) return;

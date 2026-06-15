@@ -44,6 +44,13 @@ if (controller.TryUnlock(nodeId) == UnlockResult.Success)
 - Nối port **Unlocks → Requires** để tạo prerequisite.
 - **Validate**: bắt cycle, Id trùng/rỗng, node không tới được từ root.
 
+## Data mẫu (1 click)
+`Tools > SkillTree > Samples`:
+- **Create Rune Tree (Global)** — tree global theo nhánh la bàn (Formation/Combat/Gold/XP/Storage/Chest), currency `gold`, node nhiều cấp, node cuối `Rune of Ascension` (1M→3M→50M).
+- **Create Knight Tree (Hero)** — tree per-class (active + passive: Piercing Thrust, Shield Charge, Aegis Field, Sacred Blade...), currency `skillpoint:knight`.
+
+Mô phỏng cấu trúc dữ liệu TaskBar Hero; sinh ra asset thật tại `Samples/Generated/` để test ngay.
+
 ## Mở rộng
 | Muốn thêm | Làm gì | Đụng core? |
 |---|---|---|

@@ -8,6 +8,14 @@ namespace SkillTree
         [SerializeField] private string flagId;
         [SerializeField] private bool valueWhenUnlocked = true;
 
+#if UNITY_EDITOR
+        public void Editor_Configure(string flagId, bool valueWhenUnlocked)
+        {
+            this.flagId = flagId;
+            this.valueWhenUnlocked = valueWhenUnlocked;
+        }
+#endif
+
         public override void Apply(ISkillEffectContext context, int rank, object source)
         {
             if (context == null || string.IsNullOrEmpty(flagId)) return;

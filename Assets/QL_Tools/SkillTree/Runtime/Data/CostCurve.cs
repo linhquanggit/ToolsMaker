@@ -23,6 +23,20 @@ namespace SkillTree
         public CostMode Mode => mode;
         public int BaseCost => baseCost;
 
+        public CostCurve() { }
+
+        public CostCurve(CostMode mode, int baseCost, int perRankIncrement = 0)
+        {
+            this.mode = mode;
+            this.baseCost = baseCost;
+            this.perRankIncrement = perRankIncrement;
+        }
+
+        public static CostCurve PerRank(params int[] costs)
+        {
+            return new CostCurve { mode = CostMode.PerRank, perRankCosts = costs ?? Array.Empty<int>() };
+        }
+
         public int GetCost(int targetRank)
         {
             if (targetRank < 1) return 0;
